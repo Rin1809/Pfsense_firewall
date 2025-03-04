@@ -1,5 +1,6 @@
-#This repository, no coding. As a student learning about cyber security, i just want to show what i did and how a firewall work (doing realistic simulation lab ). If care about it so expan it down ᓚᘏᗢ
+# This repository, no coding. As a student learning about cyber security, i just want to show what i did and how a firewall work (doing realistic simulation lab ). If care about it so expan it down ᓚᘏᗢ
 
+## LAB Document
 <details>
    <summary>PfSense Firewall Model 1</summary>
 # PfSense Firewall Configuration: Realistic Lab Simulation 1
