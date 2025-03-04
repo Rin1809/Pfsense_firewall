@@ -6,7 +6,6 @@
    
 # PfSense Firewall Configuration: Realistic Lab Simulation 1
 
-![image](https://github.com/user-attachments/assets/4af9bb86-d9a5-4573-bfaf-45e0e8fc4d09)
 
 This document outlines a practical lab simulation demonstrating common firewall configuration tasks using pfSense version 2.7.2-RELEASE (amd64). This lab setup involves configuring network zones (WAN, LAN, DMZ, DTB), setting up Network Address Translation (NAT) rules, implementing web access restrictions using Squid, and opening specific ports for different network zones and user groups. This lab provides a hands-on experience with essential firewall administration concepts and techniques using pfSense, a widely used open-source firewall platform.
 
