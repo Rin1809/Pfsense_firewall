@@ -1,4 +1,4 @@
-# PfSense Firewall Configuration: Realistic Lab Simulation 1
+![image](https://github.com/user-attachments/assets/4af9bb86-d9a5-4573-bfaf-45e0e8fc4d09)# PfSense Firewall Configuration: Realistic Lab Simulation 1
 
 This document outlines a practical lab simulation demonstrating common firewall configuration tasks using pfSense version 2.7.2-RELEASE (amd64). This lab setup involves configuring network zones (WAN, LAN, DMZ, DTB), setting up Network Address Translation (NAT) rules, implementing web access restrictions using Squid, and opening specific ports for different network zones and user groups. This lab provides a hands-on experience with essential firewall administration concepts and techniques using pfSense, a widely used open-source firewall platform.
 
@@ -474,3 +474,418 @@ This screenshot shows the complete set of firewall rules on the LAN interface, i
 
 ---
 
+# PfSense Firewall Configuration: Realistic Lab Simulation 2
+
+
+**Purpose:** This report outlines the configuration of a pfSense system, including information about rules, etc.
+
+**Set Up:** The pfSense system is running version 2.7.2-RELEASE (amd64). The network interface configuration is as follows:
+
+![image](https://github.com/user-attachments/assets/eb56b5a1-154e-4785-a5db-29a5b87c6c1a)
+
+
+| Interface | Interface Name | IP Address         | Description                                                                                                                                 |
+| --------- | -------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| WAN       | em0            | 192.168.19.10/24   | **WAN (Wide Area Network):** Interface em0 is assigned to the WAN and has IP address 192.168.19.10/24. This interface connects pfSense to the internet or external networks. |
+| LAN       | em1            | 192.168.20.10/24   | **LAN (Local Area Network):** Interface em1 is assigned to the LAN and has IP address 192.168.20.10/24. This interface connects pfSense to the internal network, where devices like computers, printers, etc., are connected. |
+| DMZ       | em2 (opt1)     | 192.168.30.10/24   | **DMZ (Demilitarized Zone):** Interface em2 (opt1) is assigned to the DMZ and has IP address 192.168.30.10/24. This is a separate network zone, located between the LAN and WAN, typically used to place public servers (web servers, mail servers, etc.) to enhance security for the LAN. |
+| DTB       | em3 (OTP2)     | 192.168.40.10/24   | **DTB (Data Zone):** Interface em3 (OTP2) is assigned to the DTB and has IP address 192.168.40.10/24. This zone is for database servers or sensitive data.                                            |
+
+
+The current network configuration of pfSense demonstrates the system being used to separate the LAN and DMZ networks, creating an additional layer of security for the internal network.  The use of 3 separate interfaces (WAN, LAN, DMZ) allows for flexible rule application and tight control of network traffic between network zones.
+
+**1. Initial Check:**
+
+The default rules for LAN and DMZ are different.
+
+![image](https://github.com/user-attachments/assets/96b24fc5-d159-49fa-a576-75dd359709bb)
+
+
+By default, the LAN zone has a default rule allowing everything, so it can access the internet.
+
+![image](https://github.com/user-attachments/assets/5b036c25-4654-4ed2-98d5-94847b2b0d58)
+
+
+For the DMZ zone, there are no rules, so by default, it cannot access the internet.
+
+![image](https://github.com/user-attachments/assets/46fbf21c-a635-44dd-a7c7-7ba67925e732)
+
+**1. Allowing DMZ to Access the Internet**
+
+
+This rule applies to all IP protocols (IPv4), all packets originating from subnets within the DMZ and destined for any destination. (Simply put, the DMZ zone can now access the internet).
+![image](https://github.com/user-attachments/assets/160d4ba0-91e5-4438-8f9c-f1fa0e01d707)
+
+Save and test:
+
+![image](https://github.com/user-attachments/assets/87478476-3acd-474d-820b-c98f931f21df)
+
+
+**Caution:**  Because the Destination is set to "Any" on both cards, this rule will apply to all destination addresses, both inside and outside the network, including ping. If the rule is intended for specific traffic, opening it to all destinations could allow attackers to reach any device on the network. Therefore, we should only allow necessary ports like 443 for HTTPS, 80 for HTTP, and 22 for SSH.
+
+![image](https://github.com/user-attachments/assets/cedc79f2-8a14-47ff-82d7-3b1378f32f29)
+
+
+**2. Modifying Rules to Block Ping and Allow Only Ports 22, 80, 443**
+
+**Method 1: Modifying the Protocol and Destination Port Range**
+
+Change the Protocol to TCP and the Destination Port Range to the desired port.
+
+![image](https://github.com/user-attachments/assets/a4607017-5ff5-420b-b3b5-404ceb7ca4fc)
+
+
+Do the same for the remaining ports.
+
+**Method 2: Using Aliases**
+
+Create an Alias and add the desired ports.
+
+![image](https://github.com/user-attachments/assets/d0f24f56-e9e1-4793-b211-80dc50f5246f)
+
+Go back to the Rule and modify it to:
+
+![image](https://github.com/user-attachments/assets/49f71959-f234-45e5-a746-7fd159892914)
+
+
+**Benefit:** Convenient, easy to manage, better than Method 1.
+
+However, if we only add ports 80 or 443, while we can access the internet in a basic sense, we can only access websites using their IP addresses directly. We cannot use domain names because domain name resolution to IP addresses is not possible, leading to inability to access the internet using URLs.
+
+**Solution:** Add port 53 (DNS) to the aliases to enable domain name resolution.
+
+![image](https://github.com/user-attachments/assets/45875170-a04a-4db2-9df1-218b12c020af)
+
+
+
+Following this approach, we can customize for other services as needed:
+
+*   **Email:** Sending and receiving emails using ports 25 (SMTP), 110 (POP3), 143 (IMAP), etc.
+*   **FTP:** File transfer using ports 21 (FTP control), 20 (FTP data), etc.
+*   **VPN:** VPN connections often use ports like 1723 (PPTP), 4500 (IPsec), 1194 (OpenVPN), etc.
+*   **Remote Desktop:** Remote computer access typically uses port 3389 (RDP), etc.
+*   **Online Games:** Online games often use different ports depending on the game.
+
+**3. Creating a Rule to Block Ping, Blocking All ICMP Traffic from the Internet to the LAN**
+
+Purpose: To mitigate flood attacks.
+
+To achieve this, we need to create a rule for the LAN zone.
+
+![image](https://github.com/user-attachments/assets/e9af85f9-11ae-44eb-8bfb-fb0a3f29452b)
+
+
+Set Action to Block (block).
+Set Interface to WAN.
+Set Protocol to ICMP.
+
+This section is customizable. Here, we will block all ICMP from WAN to LAN.
+
+![image](https://github.com/user-attachments/assets/9e37b3b8-eed0-457b-8c5c-713faca9fabc)
+
+**Benefits of the Rules:**
+
+*   **Enhanced Security:** Blocking ICMP from WAN helps prevent attackers from using ping and traceroute to scan the LAN, looking for active devices and security vulnerabilities.
+*   **Scope of Impact:** This rule only blocks ICMP traffic from the Internet to the LAN, not affecting ICMP traffic between other interfaces (LAN, DMZ).
+*   **Mitigation of Denial-of-Service (DoS) Attacks:** Some DoS attacks use ICMP flood, sending a large amount of ICMP traffic to the target to overload the system. Primarily to prevent external attackers from using ping and other ICMP tools to scan the LAN, looking for active devices and security vulnerabilities.
+
+**!! However, there is an issue: the DMZ can still ping the LAN.**
+
+If someone gains access to the DMZ zone, they can scan the LAN because the DMZ can still ping the LAN. They can use ping to scan the LAN, looking for active devices and security vulnerabilities.
+
+---> **Solution:** Add an ICMP blocking rule to block ping from DMZ as well.
+
+![image](https://github.com/user-attachments/assets/a59ef7fc-75d1-45b3-aef9-d5c3a54e6f58)
+
+
+Create a rule on the DMZ interface with the source as DMZ subnet and the destination as LAN subnet to block all ICMP to the LAN.
+
+And then the DMZ will no longer be able to ping the LAN. Enhancing security.
+
+**Benefits:** More secure, less risky.
+
+**Drawbacks:** Difficulty in network troubleshooting, may affect some applications or services that might use ICMP for special functions.
+
+However, overall, the security benefits outweigh the risks.
+
+In addition to blocking ping from WAN to LAN and DMZ to LAN (mentioned earlier), we can also consider blocking ping from the following directions to further enhance network security:
+
+1.  **LAN to WAN:**
+    *   **Purpose:**
+        *   Prevent external attackers from using ping to scan devices in the LAN.
+        *   Reduce the risk of Denial-of-Service (DoS) attacks from outside.
+    *   **Note:**
+        *   Blocking ping from LAN to WAN may affect some applications or services that need to use ping to check internet connectivity.
+        *   If you need to allow some devices in the LAN to ping outwards, create a separate rule allowing ping with restricted conditions.
+
+2.  **DMZ to WAN:**
+    *   **Purpose:**
+        *   Prevent external attackers from using ping to scan servers in the DMZ.
+        *   Reduce the risk of Denial-of-Service (DoS) attacks from outside.
+    *   **Note:**
+        *   Blocking ping from DMZ to WAN may affect some applications or services that need to use ping to check internet connectivity.
+        *   If you need to allow some servers in the DMZ to ping outwards, create a separate rule allowing ping with restricted conditions.
+
+3.  **LAN to DMZ (if needed):**
+    *   **Purpose:**
+        *   Prevent scanning and attacks from the LAN network to the DMZ. Enhance isolation between LAN and DMZ.
+    *   **Note:**
+        *   Blocking ping from LAN to DMZ may affect some applications or services that need to use ping to connect to servers in the DMZ.
+        *   Careful consideration is needed before applying, as it may cause more hindrance than blocking ping in other directions.
+
+| From | To  | Purpose                                     | Recommendation |
+| ---- | --- | ------------------------------------------- | -------------- |
+| WAN  | LAN | Prevent external attacks                      | Should Block   |
+| DMZ  | LAN | Prevent attacks from DMZ, isolate DMZ        | Should Block   |
+| LAN  | WAN | Prevent scanning, external attacks          | Consider       |
+| DMZ  | WAN | Prevent scanning, external attacks          | Consider       |
+| LAN  | DMZ | Isolate LAN from DMZ                        | Consider Carefully |
+
+**4. Squid, SquidGuard (squidGuard), Lightsquid (lightsquid).**
+
+Downloading via command or interface failed :((
+
+![image](https://github.com/user-attachments/assets/2c1551ac-c01b-4050-9a28-304f8e244882)
+
+But simply put, I can explain these three packages as follows:
+
+On pfSense, there are 3 packages related to Squid, each with different functions and purposes:
+
+1.  **Squid (squid):**
+    *   **Function:** Provides basic proxy server service (HTTP/HTTPS proxy).
+    *   **Purpose:**
+        *   **Cache web content:** Squid stores (caches) web pages and other web content that users have accessed. When users revisit the same webpage, Squid will return the content from the cache, speeding up web access and reducing bandwidth consumption.
+        *   **Control web access:** Squid can be configured to block access to specific websites, filter web content, limit bandwidth, etc.
+        *   **User Authentication:** Squid can require users to authenticate (username/password) before accessing the Internet.
+
+2.  **SquidGuard (squidGuard):**
+    *   **Function:** Provides advanced web content filtering features for Squid.
+    *   **Purpose:**
+        *   **Block inappropriate websites:** SquidGuard can block access to websites containing adult content, violence, gambling, etc.
+        *   **Categorize web traffic:** SquidGuard can categorize web traffic into different groups (e.g., social media, news, entertainment, etc.) and apply different policies to each group (e.g., bandwidth limiting, blocking access during working hours, etc.).
+        *   **Log web activity:** SquidGuard can record detailed logs of user web access activity.
+
+3.  **Lightsquid (lightsquid):**
+    *   **Function:** Provides web traffic reporting and analysis tools for Squid.
+    *   **Purpose:**
+        *   **Monitor web activity:** Lightsquid collects information about user web access activity, such as websites accessed, access time, bandwidth consumption, etc.
+        *   **Generate detailed reports:** Lightsquid generates visual reports on web traffic, helping you better understand how users are using the Internet.
+        *   **Detect web access issues:** Lightsquid can help you detect performance or security issues related to web access.
+
+**5. Blocking Access to a Specific Website**
+
+**Create an Alias for the website to block:**
+
+**Firewall > Aliases > Add**
+
+*   **Name:** BlockedWebsite (or any name)
+*   **Type:** URL Table (easylist + urlhaus)
+*   **URL:** Facebook.com
+*   **Description:** Block access to Facebook
+*   **Save**
+![image](https://github.com/user-attachments/assets/4a2bdd19-5345-4ba4-92b3-9de2f8087b61)
+
+Creating an Alias like this allows us to block facebook.com (add other websites if desired). Now, create a rule to insert the alias and block Facebook access for the LAN network.
+
+![image](https://github.com/user-attachments/assets/26ac9506-03ac-48b3-af61-7328e0fb4ea5)
+
+
+
+Set Action to Block, meaning block access.
+
+*   **Source:** From LAN subnet.
+*   **Destination:** Set to Alias and enter the name of the alias created earlier.
+*   **Destination Port Range:** Set to other and choose the port alias created earlier.
+*   **Save**
+
+![image](https://github.com/user-attachments/assets/cefed564-5010-4b38-a932-f42a85e781eb)
+
+Facebook will now be blocked from access.
+
+![image](https://github.com/user-attachments/assets/b96ce0d1-fd3c-4e82-b6f1-9f8650104691)
+
+
+The same can be done for other websites to block or only allow access to a single website by using Aliases.
+
+**6. Limiting Internet Access Time with Schedules**
+
+![image](https://github.com/user-attachments/assets/8fce32b8-286b-49e6-8625-78c6c5fad57e)
+
+Here, we will limit YouTube viewing time every day of September, with blocking starting at 9:30 AM and YouTube access being restored at 1:00 PM.
+![image](https://github.com/user-attachments/assets/eb342f4d-56cf-482f-b65b-b0fbc184db9a)
+
+
+Create an alias to contain YouTube's address.
+
+![image](https://github.com/user-attachments/assets/982bacf0-868f-4d13-9260-1346ecf35f1d)
+
+
+Then create a rule to apply these restrictions to YouTube.
+
+
+![image](https://github.com/user-attachments/assets/9047ae22-c9cd-42af-a43e-87c8b259d1cb)
+
+
+Set Action to Block to apply the Schedule.
+
+![image](https://github.com/user-attachments/assets/5ac22414-b9eb-4f6c-8515-d1377ce9c082)
+
+
+Set Destination to the Alias name created previously.
+
+![image](https://github.com/user-attachments/assets/b744d4cd-0d99-4599-bd7d-e9c19c2616cc)
+
+
+
+
+In the Advanced Options section, select the Schedule we created earlier to limit YouTube access time. Save and done, YouTube viewing time can now be limited.
+
+
+**Schedules in pfSense** are used to define a specific time range, helping you apply policies and rules flexibly over time.
+
+*   **Limit Internet Access by Time:** As done with blocking YouTube, we can allow internet access only during certain time frames.
+*   **Time-Based Bandwidth Control:** Apply different QoS policies in different time frames. For example, prioritize bandwidth for video call applications during working hours.
+*   **Automatic VPN On/Off:** Automatically connect VPN during working hours and disconnect after working hours.
+*   **Automatic Blocklist Updates:** pfBlockerNG configuration can be added to update ad/malware blocklists at night, avoiding performance impact during the day.
+*   **Scheduled Server Startup/Shutdown:** Automatically turn on necessary servers during peak hours and turn them off during off-peak hours to save energy.
+
+
+
+
+**7. Traffic Shaping & QoS:**
+
+**Purpose:** Prioritize bandwidth for important applications/services, limit bandwidth for applications/users/devices, ensure smooth network experience for prioritized tasks.
+
+**Implementation Steps:**
+
+**Create Queues:**
+
+**Firewall > Traffic Shaper > Queues.**
+
+Click **Add** to create a new queue.
+
+**Configure Queue:**
+
+*   **Name:** Set a name for the queue, e.g., VoIP_Priority, Streaming_Limit.
+*   **Interface:** Select the network interface to apply to (WAN, LAN).
+*   **Bandwidth:** Define the maximum bandwidth limit for the queue (e.g., 1Mbps).
+![image](https://github.com/user-attachments/assets/bfc1702d-a30d-4762-ba3b-60b840c95180)
+
+Then click Save.
+Here, we will create 2 limiters with "1MP_DOWNLOAD" and "1MB_UPLOAD".
+![image](https://github.com/user-attachments/assets/b9d84d87-ca62-4f8d-a215-d6e985bbfa16)
+
+
+Then go back to Aliases and create an Alias for Traffic Shaping for each machine.
+
+![image](https://github.com/user-attachments/assets/67cc917c-a2a4-4752-869a-190e0c8c3e2a)
+
+
+
+Test speed before applying.
+
+![image](https://github.com/user-attachments/assets/6b4af539-1eb6-440a-8d93-0773e02d405b)
+
+
+Create a rule to apply. Here, we will apply it to all protocols, set Action to Pass.
+
+![image](https://github.com/user-attachments/assets/0bba5894-609f-419e-9dc7-7ed2b1a0c066)
+
+Go to Advanced Options and scroll down to the bottom. In the In/Out pipe section, set "in" to "1MB_UPLOAD" and "out" to "1MB_DOWNLOAD".
+
+Then save.
+
+
+And restart the test. Download and upload speeds for the desired PC are now limited. We can add more PCs to limit in the Alias section.
+![image](https://github.com/user-attachments/assets/6761b98e-1d53-42c1-8fff-861de47c7c51)
+
+**8. Captive Portal:**
+
+**Purpose:** Create a mandatory login page for users wanting to access the Wi-Fi network.
+
+**Implementation Steps:**
+
+**Installation:**
+
+**Services > Captive Portal > Add**
+
+![image](https://github.com/user-attachments/assets/3ca0fe0d-4fe3-45a9-bf64-c2dbee116255)
+
+
+**Create a Zone:**
+
+![image](https://github.com/user-attachments/assets/ac971ddd-cd1d-4d2c-97ec-4282645f7b15)
+
+
+**Enable Captive Portal** to show configurations. Here, we will choose the LAN network.
+![image](https://github.com/user-attachments/assets/f648d6bc-8aca-402b-9bf2-0bd3d12444d9)
+
+Customize one of the two themes.
+
+Templates can be found on GitHub. Here, we will take a sample template from GitHub.
+
+![image](https://github.com/user-attachments/assets/61be41d7-bd6b-4ffb-ade3-9de0ce5f40ce)
+
+
+**Authentication Method:** Customize security. Here, I will choose "Use an Authentication backend".
+
+![image](https://github.com/user-attachments/assets/b8c7410a-675f-4575-acef-3f4bf8601c6f)
+
+Then save.
+
+![image](https://github.com/user-attachments/assets/756d0b66-b13c-4184-98ca-e73999a370f0)
+
+Go to **System > User Manager > User > Edit**
+
+Create users here and save (it doesn't allow spaces in the name, in the image, I accidentally included one :)).
+
+![image](https://github.com/user-attachments/assets/3c5fe916-f035-42d6-9627-315b8a4d1d5f)
+
+
+Go to the Action section to edit the user class to be suitable for the captive portal.
+
+
+Click "Add privileges" and select the options as shown above, then save.
+
+![image](https://github.com/user-attachments/assets/22df3d79-1f01-4245-a791-1b8218dec5b2)
+
+
+After that, every time a user from a LAN PC wants to access a website, they will have to enter the username and password created above.
+
+![image](https://github.com/user-attachments/assets/f9c7db6b-5b8e-424d-8c06-2dbb09137eb4)
+
+
+**9. Blocking File Downloads by File Format**
+
+Here, we will block .exe files like this (using SquidGuard).
+
+![image](https://github.com/user-attachments/assets/02330c4f-4616-4988-9598-604331179c39)
+
+Go to the **Target Categories** section.
+
+![image](https://github.com/user-attachments/assets/990a3e6c-d5df-4c66-8da0-1605f93645be)
+
+
+Click Add to create a blacklist for .exe files. Define the file format as .exe.
+![image](https://github.com/user-attachments/assets/7956befb-b288-402c-bebc-0220c5c24c17)
+
+
+
+
+Add a message :D and save.
+
+![image](https://github.com/user-attachments/assets/a0606764-d229-4820-b7a7-62ef5fa35962)
+
+
+In the **Common ACL** section, adjust the newly created Target, ensuring it is set to Deny.
+
+
+
+Then apply the changes.
+
+
+Go back to the website and download again.
+
+(Image showing blocked .exe download message)
+
+**Result :D** (Download of .exe file blocked successfully)
