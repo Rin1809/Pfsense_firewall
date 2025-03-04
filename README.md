@@ -3,6 +3,7 @@
 ## LAB Document
 <details>
    <summary>PfSense Firewall Model 1</summary>
+   
 # PfSense Firewall Configuration: Realistic Lab Simulation 1
 
 ![image](https://github.com/user-attachments/assets/4af9bb86-d9a5-4573-bfaf-45e0e8fc4d09)
@@ -484,6 +485,8 @@ This screenshot shows the complete set of firewall rules on the LAN interface, i
 
 <details>
    <summary>PfSense Firewall Model 2</summary>
+
+   
 # PfSense Firewall Configuration: Realistic Lab Simulation 2
 
 **Purpose:** This report outlines the configuration of a pfSense system, detailing firewall rules, proxy settings, and other configurations implemented in a realistic lab simulation. The goal is to demonstrate practical firewall management tasks and enhance understanding of network security principles using pfSense version 2.7.2-RELEASE (amd64). This lab is designed to provide hands-on experience with essential firewall functionalities in a segmented network environment.
