@@ -1,4 +1,10 @@
-![image](https://github.com/user-attachments/assets/4af9bb86-d9a5-4573-bfaf-45e0e8fc4d09)# PfSense Firewall Configuration: Realistic Lab Simulation 1
+#This repository, no coding. As a student learning about cyber security, i just want to show what i did and how a firewall work (doing realistic simulation lab ). If care about it so expan it down ᓚᘏᗢ
+
+<details>
+   <summary>PfSense Firewall Model 1</summary>
+# PfSense Firewall Configuration: Realistic Lab Simulation 1
+
+![image](https://github.com/user-attachments/assets/4af9bb86-d9a5-4573-bfaf-45e0e8fc4d09)
 
 This document outlines a practical lab simulation demonstrating common firewall configuration tasks using pfSense version 2.7.2-RELEASE (amd64). This lab setup involves configuring network zones (WAN, LAN, DMZ, DTB), setting up Network Address Translation (NAT) rules, implementing web access restrictions using Squid, and opening specific ports for different network zones and user groups. This lab provides a hands-on experience with essential firewall administration concepts and techniques using pfSense, a widely used open-source firewall platform.
 
@@ -473,7 +479,10 @@ This screenshot shows the complete set of firewall rules on the LAN interface, i
 **Restore Confirmation:** After clicking "Restore", pfSense will apply the configuration and typically reboot to ensure all settings are properly loaded.  **Why does pfSense reboot after restore?**  Rebooting after restoring the configuration ensures that all services and components of pfSense are restarted and reloaded with the new configuration, guaranteeing that all settings are properly applied and active. After the restore process is complete, the firewall rules and settings will be reverted to the backed-up state. You should verify the restored configuration to ensure it is as expected.
 
 ---
+</details>
 
+<details>
+   <summary>PfSense Firewall Model 2</summary>
 # PfSense Firewall Configuration: Realistic Lab Simulation 2
 
 **Purpose:** This report outlines the configuration of a pfSense system, detailing firewall rules, proxy settings, and other configurations implemented in a realistic lab simulation. The goal is to demonstrate practical firewall management tasks and enhance understanding of network security principles using pfSense version 2.7.2-RELEASE (amd64). This lab is designed to provide hands-on experience with essential firewall functionalities in a segmented network environment.
@@ -1211,3 +1220,4 @@ After applying the SquidGuard configuration changes, test the file download bloc
 2.  **Attempt to Download .exe File:**  Browse to a website that offers `.exe` file downloads (e.g., a software download site or a test file download site). Click on a link to download an `.exe` file. Attempt to download an EXE file from a website.
 3.  **Verify Blocking:**  File download should be blocked by SquidGuard. Instead of downloading the `.exe` file, the browser should display the custom error message you configured in the `Blocked_EXE_Files` Target Category (e.g., "lỗi rồi :D") or a default SquidGuard block page if you did not configure a custom redirect.  This confirms that SquidGuard is successfully blocking `.exe` file downloads based on the file extension filtering rule you created. Verify that EXE file download is blocked and custom error message is displayed.
 
+</details>
