@@ -1210,13 +1210,25 @@ In the **Common ACL** section (Services > SquidGuard Proxy Filter > Common ACL),
 *   **`Blocked_EXE_Files` Category:**  Find the `Blocked_EXE_Files` Target Category you created in the Common ACL table. Locate Blocked_EXE_Files Target Category in Common ACL.
 *   **Action for `Blocked_EXE_Files`:**  Set the "Action" for the `Blocked_EXE_Files` Category to **"Deny"**. This tells SquidGuard to *block* access to any content that falls under the `Blocked_EXE_Files` Category (which we defined as `.exe` file downloads). Set Action for Blocked_EXE_Files Category to Deny to block EXE downloads.
 
+
+![image](https://github.com/user-attachments/assets/d69f803d-2cfe-429a-97ca-04abbb509cb6)
+
+
 Then apply the changes by clicking "Apply" in the SquidGuard General Settings page. Apply changes in SquidGuard General Settings page to activate.
+
+![image](https://github.com/user-attachments/assets/d1b307c5-b136-46bc-832c-58c09657bebc)
+
+
 
 Go back to a website (from a client machine using the Squid proxy) and attempt to download an `.exe` file again. Retest EXE file download from a client machine using Squid proxy.
 
 **Testing File Download Blocking:**
 
 After applying the SquidGuard configuration changes, test the file download blocking from a client machine on the LAN that is configured to use the Squid proxy. Test file download blocking after SquidGuard configuration.
+
+![image](https://github.com/user-attachments/assets/06fcafc8-7164-4db9-80cc-f4d0b22ed57c)
+
+![image](https://github.com/user-attachments/assets/d8e82b14-c14d-46c7-9a57-b8b790467f0e)
 
 **Testing Procedure:**
 
